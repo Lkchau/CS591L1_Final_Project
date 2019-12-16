@@ -32,37 +32,35 @@ def instrument(tree):
     for statement in tree.body:
         if isinstance(statement, ast.FunctionDef) and statement.name in tailRecursiveFunctions:
             statement = instrument_body(statement)
-        statements = statement
+        statements.append(statement)
 
     tree.body = statements
+    # print("tree " + str(tree))
     code = astor.to_source(tree)
     return code
 
 def instrument_body(function_def):
     parameters = []
     statements = []
-    print(function_def.name)
+    # print(function_def.name)
     for arg in function_def.args.args:
         parameters.append(arg.arg)
-    # statements.append('While True:')
-    for statement in function_def.body:
-        statements.append(statement)
-
-    function_def.body = statements
-    print(function_def.body)
+    
+    # statements.append(ast.parse('\nwhile True: \n \t '))
+    # first = 1
+    # print(function_def.body)
+    while_statement = [ast.While('True',function_def.body)]
+    # 'while True: \n \t'
+    # for statement in function_def.body:
+        
+        # while_statement.body += statement
+        # print(type(statement))
+        # statements.append(statement)
+    # print("Statement " + str(statement))
+    function_def.body = while_statement
+    # print("body " + str(function_def.body))
     return function_def            
             # print(statement)
-    # else:
-    #     # statements += instrument_statement(statement, parameters)
-    #     for var in parameters:
-    #         if var.startswith("_n_"):
-    #             statements += instrument_statement(function_def.name,var)
-    # function_def.body = statements
-    # return function_def
-
-# def instrument_statement(name,parameter):
-#     if_statement = ast.parse('if ' + str(parameter) + ' is None:\n \traise Exception(\'' + str(parameter) + ' is given None in ' + name + '\')')
-#     return [if_statement]
 
 
 # Main function should read an input file in the same directory and find function defs
@@ -84,7 +82,7 @@ if __name__ == "__main__":
             code = code_file.read()
             # Create the ast
             tree = ast.parse(code)
-            print(ast.dump(tree))
+            # print(ast.dump(tree))
             assert(hasTailRecursiveFunction(tree)), "No Tail-End Recursion exists in " + sys.argv[1]
             print(instrument(tree))
         
