@@ -30,12 +30,14 @@ def instrument(tree):
 
     statements = []
     for statement in tree.body:
+        print(statement)
         if isinstance(statement, ast.FunctionDef) and statement.name in tailRecursiveFunctions:
             statement = instrument_body(statement)
+            print(statement)
         statements.append(statement)
-
+    
     tree.body = statements
-    # print("tree " + str(tree))
+    # print("tree " + str(tree.body[3].body))
     code = astor.to_source(tree)
     return code
 
@@ -49,7 +51,9 @@ def instrument_body(function_def):
     # statements.append(ast.parse('\nwhile True: \n \t '))
     # first = 1
     # print(function_def.body)
-    while_statement = [ast.While('True',function_def.body)]
+    while_statement = [ast.While(True,function_def.body)]
+    # while_statement = function_def.body
+    # print(type(while_statement))
     # 'while True: \n \t'
     # for statement in function_def.body:
         
@@ -57,7 +61,8 @@ def instrument_body(function_def):
         # print(type(statement))
         # statements.append(statement)
     # print("Statement " + str(statement))
-    function_def.body = while_statement
+    statements += while_statement
+    function_def.body = statements
     # print("body " + str(function_def.body))
     return function_def            
             # print(statement)
@@ -84,7 +89,8 @@ if __name__ == "__main__":
             tree = ast.parse(code)
             # print(ast.dump(tree))
             assert(hasTailRecursiveFunction(tree)), "No Tail-End Recursion exists in " + sys.argv[1]
-            print(instrument(tree))
+            instrumentedCode = instrument(tree)
+            print(instrumentedCode)
         
             # Call our function to find the functions.
 
