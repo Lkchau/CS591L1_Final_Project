@@ -17,15 +17,22 @@ if __name__ == "__main__":
         # Assert that they will call python main <filename> or python main <filename>.py
         currPath = path.abspath(__file__+'\..\..')
         print(currPath)
+        userPath = currPath + '\\userCode\\'
         currPath = currPath +'\\test\\'
         assert len(sys.argv) == 2, "Invalid amount of arguments!"
-        assert path.exists(path.join(currPath, sys.argv[1])) or path.exists(path.join(currPath, sys.argv[1] + ".py" )), sys.argv[1] + " does not exist!"
+        assert path.exists(path.join(currPath, sys.argv[1])) or path.exists(path.join(currPath, sys.argv[1] + ".py" )) or path.exists(path.join(userPath, sys.argv[1])) or path.exists(path.join(userPath, sys.argv[1] + ".py")), sys.argv[1] + " does not exist!"
         if path.exists(path.join(currPath,sys.argv[1] + ".py")):
             filename = path.join(currPath,sys.argv[1] + ".py")
             resFile = sys.argv[1]
-        else:
+        elif path.exists(path.join(currPath, sys.argv[1])):
             filename = path.join(currPath,sys.argv[1])
             resFile = sys.argv[1][:-3]
+        elif path.exists(path.join(userPath, sys.argv[1])):
+            filename = path.join(userPath, sys.argv[1])
+            resFile = sys.argv[1][:-3]
+        else:
+            filename = path.join(userPath, sys.argv[1] + ".py")
+            resFile = sys.argv[1]
         
         # Open and read the file as code!
         with open(filename, 'r') as code_file:
