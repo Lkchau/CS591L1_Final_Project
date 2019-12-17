@@ -30,10 +30,10 @@ def instrument(tree):
 
     statements = []
     for statement in tree.body:
-        print(statement)
+        # print(statement)
         if isinstance(statement, ast.FunctionDef) and statement.name in tailRecursiveFunctions:
             statement = instrument_body(statement)
-            print(statement)
+            # print(statement)
         statements.append(statement)
     
     tree.body = statements
@@ -48,19 +48,22 @@ def instrument_body(function_def):
     for arg in function_def.args.args:
         parameters.append(arg.arg)
     
-    # statements.append(ast.parse('\nwhile True: \n \t '))
-    # first = 1
+    whileBody = []
     # print(function_def.body)
-    while_statement = [ast.While(True,function_def.body)]
-    # while_statement = function_def.body
-    # print(type(while_statement))
-    # 'while True: \n \t'
-    # for statement in function_def.body:
-        
-        # while_statement.body += statement
-        # print(type(statement))
-        # statements.append(statement)
-    # print("Statement " + str(statement))
+    for obj in function_def.body:
+        statement = [obj]
+        if isinstance(obj, ast.Return):
+            objVal = obj.value
+            if isinstance(objVal, ast.Call):
+                assignState = [ast.Assign(function_def.args.args, objVal.args)]
+        whileBody += statement
+    print(assignState)        
+    print(whileBody)
+    print(function_def.body)
+    # function_def.body = whileBody
+
+    while_statement = [ast.While(ast.NameConstant(value=True),assignState, [])]
+    print(while_statement[0].body)
     statements += while_statement
     function_def.body = statements
     # print("body " + str(function_def.body))
@@ -84,18 +87,20 @@ if __name__ == "__main__":
         
         # Open and read the file as code!
         with open(filename, 'r') as code_file:
-            code = code_file.read()
+            code = code_file.read().strip()
             # Create the ast
             tree = ast.parse(code)
-            # print(ast.dump(tree))
+            print(ast.dump(tree))
+            print("Original: \n" + code + "\n")
+            # print("Has tail rec: " + str(hasTailRecursiveFunction(tree)))
             assert(hasTailRecursiveFunction(tree)), "No Tail-End Recursion exists in " + sys.argv[1]
             instrumentedCode = instrument(tree)
-            print(instrumentedCode)
+            print("\nInstrumented: \n" + str(instrumentedCode) + "\n")
         
             # Call our function to find the functions.
 
             print("-----")
     except AssertionError as e:
-        print(e.args[0])
+        print(e[0])
         print("-----")
 
