@@ -21,7 +21,7 @@ def hasTailRecursiveFunction(tree):
                     if isinstance(retVal, ast.Call):
                         retFuncName = retVal.func.id
                         if(retFuncName == funcName):
-                            print("Tail-end Recursive Function at: " + str(node.lineno))
+                            print("Tail-end Recursive Function at line " + str(node.lineno) + " (" + str(retFuncName)+")")
                             tailRecursiveFunctions.append(retFuncName)
                             return True
     return False
@@ -55,17 +55,20 @@ def instrument_body(function_def):
         if isinstance(obj, ast.Return):
             objVal = obj.value
             if isinstance(objVal, ast.Call):
-                assignState = [ast.Assign(function_def.args.args, objVal.args)]
-        whileBody += statement
-    print(assignState)        
-    print(whileBody)
-    print(function_def.body)
+                assignStatement = []
+                for i in range(len(function_def.args.args)):
+                    statement = [ast.Assign([ast.Name(id = function_def.args.args[i].arg)], objVal.args[i])]
+                    whileBody += statement
+        if statement == [obj]:
+            whileBody += statement
+    # whileBody += [ast.Continue(), ast.Break()]
     # function_def.body = whileBody
 
-    while_statement = [ast.While(ast.NameConstant(value=True),assignState, [])]
-    print(while_statement[0].body)
-    statements += while_statement
-    function_def.body = statements
+    while_statement = [ast.While(test = ast.NameConstant(value=True), body = whileBody, orelse = [])]
+    # print(while_statement[0].body)
+    # while_statement += whileBody
+
+    function_def.body = while_statement
     # print("body " + str(function_def.body))
     return function_def            
             # print(statement)
@@ -76,7 +79,8 @@ if __name__ == "__main__":
     try:
         print("-----")
         # Assert that they will call python main <filename> or python main <filename>.py
-        currPath = path.abspath(__file__+'\..')
+        currPath = path.abspath(__file__+'\..\..')
+        print(currPath)
         currPath = currPath +'\\test\\'
         assert len(sys.argv) == 2, "Invalid amount of arguments!"
         assert path.exists(path.join(currPath, sys.argv[1])) or path.exists(path.join(currPath, sys.argv[1] + ".py" )), sys.argv[1] + " does not exist!"
@@ -90,17 +94,17 @@ if __name__ == "__main__":
             code = code_file.read().strip()
             # Create the ast
             tree = ast.parse(code)
-            print(ast.dump(tree))
+            # print(ast.dump(tree))
             print("Original: \n" + code + "\n")
             # print("Has tail rec: " + str(hasTailRecursiveFunction(tree)))
             assert(hasTailRecursiveFunction(tree)), "No Tail-End Recursion exists in " + sys.argv[1]
             instrumentedCode = instrument(tree)
-            print("\nInstrumented: \n" + str(instrumentedCode) + "\n")
+            print("\n===== \nInstrumented: \n" + str(instrumentedCode))
         
             # Call our function to find the functions.
 
             print("-----")
     except AssertionError as e:
-        print(e[0])
+        print(e)
         print("-----")
 

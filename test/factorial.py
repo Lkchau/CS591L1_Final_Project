@@ -11,8 +11,8 @@ def alteredFactorial(n, a = 1):
         if(n == 0):
             return a
         n , a = n-1,n*a
-        continue
-        break
+        # continue
+        # break
 
 
 # Recursion but not tail-end
