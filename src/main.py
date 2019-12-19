@@ -19,20 +19,25 @@ if __name__ == "__main__":
         print(currPath)
         userPath = currPath + '\\userCode\\'
         currPath = currPath +'\\test\\'
+        
         assert len(sys.argv) == 2, "Invalid amount of arguments!"
         assert path.exists(path.join(currPath, sys.argv[1])) or path.exists(path.join(currPath, sys.argv[1] + ".py" )) or path.exists(path.join(userPath, sys.argv[1])) or path.exists(path.join(userPath, sys.argv[1] + ".py")), sys.argv[1] + " does not exist!"
         if path.exists(path.join(currPath,sys.argv[1] + ".py")):
             filename = path.join(currPath,sys.argv[1] + ".py")
             resFile = sys.argv[1]
+            filePath = "test"
         elif path.exists(path.join(currPath, sys.argv[1])):
             filename = path.join(currPath,sys.argv[1])
             resFile = sys.argv[1][:-3]
+            filePath = "test"
         elif path.exists(path.join(userPath, sys.argv[1])):
             filename = path.join(userPath, sys.argv[1])
             resFile = sys.argv[1][:-3]
+            filePath = "user"
         else:
             filename = path.join(userPath, sys.argv[1] + ".py")
             resFile = sys.argv[1]
+            filePath = "user"
         
         # Open and read the file as code!
         with open(filename, 'r') as code_file:
@@ -46,7 +51,7 @@ if __name__ == "__main__":
             assert(tailEndRecursion is not None), "No Tail-End Recursion exists in " + sys.argv[1]
             instrumentedCode = instrument(tree, tailEndRecursion)
             print("\n===== \nInstrumented: \n" + str(instrumentedCode))
-            writeToResult(instrumentedCode, resFile)
+            writeToResult(instrumentedCode, resFile, filePath)
             # Call our function to find the functions.
 
             print("-----")
