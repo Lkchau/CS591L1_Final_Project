@@ -1,15 +1,20 @@
 from astor import astor
 import ast
-def instrument(tree, tailEndRecursion):
-
+def instrument(tree, tailEndRecursion, comment, commentMap = None):
     statements = []
-    for statement in tree.body:
-        # print(statement)
-        if isinstance(statement, ast.FunctionDef) and statement.name in tailEndRecursion:
-            statement = instrument_body(statement)
+    if(comment):
+        for statement in tree.body:
+            if isinstance(statement, ast.FunctionDef) and statement.lineno in commentMap.values():
+                statement = instrument_body(statement)
+            statements.append(statement)
+    else:
+        for statement in tree.body:
             # print(statement)
-        statements.append(statement)
-    
+            if isinstance(statement, ast.FunctionDef) and statement.name in tailEndRecursion:
+                statement = instrument_body(statement)
+                # print(statement)
+            statements.append(statement)
+        
     tree.body = statements
     # print("tree " + str(tree.body[3].body))
     code = astor.to_source(tree)

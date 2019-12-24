@@ -1,8 +1,9 @@
-import ast, sys
+import ast, sys, tokenize
 from os import path
 from checkTailRecursion import hasTailRecursiveFunction
 from instrumentation import instrument
 from writeFile import writeToResult
+from commentFinder import comments
 # Task 1 - Find recursive functions
 # Task 2 - Find tail-end recurisive functions
 # Task 3 - Figure out how to convert that to an iterative version
@@ -39,20 +40,30 @@ if __name__ == "__main__":
             resFile = sys.argv[1]
             filePath = "user"
         
+        comment = input("Please type 'comment' without the quotes if you would like to only transform tail-recursive functions with comments\n")
+        print()
         # Open and read the file as code!
+
         with open(filename, 'r') as code_file:
+            # copy = code_file
             code = code_file.read().strip()
             # Create the ast
             tree = ast.parse(code)
+            tailEndRecursion, lineno = hasTailRecursiveFunction(tree)
+            commentLines, commentMap = comments(filename, lineno)
             # print(ast.dump(tree))
             print("Original: \n" + code + "\n")
             # print("Has tail rec: " + str(hasTailRecursiveFunction(tree)))
-            tailEndRecursion = hasTailRecursiveFunction(tree)
+
             assert(tailEndRecursion is not None), "No Tail-End Recursion exists in " + sys.argv[1]
-            instrumentedCode = instrument(tree, tailEndRecursion)
+            if(comment == ""):
+                instrumentedCode = instrument(tree, tailEndRecursion, False)
+            
+            else:
+                instrumentedCode = instrument(tree, tailEndRecursion, True, commentMap)
+
             print("\n===== \nInstrumented: \n" + str(instrumentedCode))
             writeToResult(instrumentedCode, resFile, filePath)
-            # Call our function to find the functions.
 
             print("-----")
     except AssertionError as e:
